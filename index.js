@@ -1,38 +1,28 @@
 const express = require("express");
-const cors = require("cors");
 const mysql = require("mysql2");
-const dbConfig = require("./config/db");
 
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PW,
+  database: process.env.DB_NAME,
+});
 
-console.log(dbConfig);
+app.get("/", (req, res) => {
+  res.json("ok");
+});
 
-// test db connection
-// const testDbConnection = async () => {
-//   try {
-//     // connection
-//     const connection = await mysql.createConnection(dbConfig);
-//     console.log(`Database Connected to: ${connection.config.database}`);
-//   } catch (error) {
-//     console.error(`Error connection to database: ${error}`);
-//   }
-// };
-// testDbConnection();
-
-// test basic route
-app.use("/", (req, res) => {
-  res.json({ message: "Testing" });
+app.get("/users", (req, res) => {
+  const q = `SELECT * FROM users`;
+  db.query(q, (err, data) => {
+    if (err) return res.json("ERROR", err);
+    return res.json(data);
+  });
 });
 
 app.listen(PORT, () => {
