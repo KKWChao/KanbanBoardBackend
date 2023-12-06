@@ -3,16 +3,58 @@ const router = express.Router();
 const db = require("../config/db");
 const uuid = require("uuid");
 
-const app = express();
-app.use(express.json());
+const {
+  getAllUsersQuery,
+  deleteUserQuery,
+  getSingleUserQuery,
+  postUserQuery,
+} = require("../queries/userQueries");
+
+router.use(express.json());
 
 /* GET USERS (FOR TESTING ONLY) (COMMENT OUT WHEN IN PRODUCTION)  */
 router.get("/", (req, res) => {
-  const q = `SELECT * FROM users`;
+  db.query(getAllUsersQuery, (err, data) => {
+    if (err)
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching users",
+        error: err,
+      });
 
-  db.query(q, (err, data) => {
-    if (err) return res.status(500).json("Error fetching users: ", err);
-    return res.status(200).json(data);
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: data,
+    });
+  });
+});
+
+/* GET SINGLE USER */
+router.get("/:id", (req, res) => {
+  const userId = req.params.id;
+
+  db.query(getSingleUserQuery, [userId], (err, data) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Error fetching user",
+        error: err,
+      });
+    }
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: data,
+    });
   });
 });
 
@@ -22,7 +64,7 @@ router.post("/", (req, res) => {
   const q = "INSERT INTO users (`id`, `email`, `password`) VALUES (?)";
   const values = [uuid.v4(), email, password];
 
-  db.query(q, [values], (err, data) => {
+  db.query(postUserQuery, [values], (err, data) => {
     if (err) return res.status(500).json("Error creating users: ", err);
     return res.status(200).json("User created");
   });
@@ -44,9 +86,8 @@ router.put("/:id", (req, res) => {
 /* DELETE USERS */
 router.delete("/:id", (req, res) => {
   const userId = req.params.id;
-  const q = "DELETE FROM users WHERE id = ?";
 
-  db.query(q, [userId], (err, data) => {
+  db.query(deleteUserQuery, [userId], (err, data) => {
     if (err) return res.status(500).json("Error deleting users: ", err);
     return res.status(200).json("User has been deleted");
   });

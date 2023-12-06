@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-db.connect(function (err) {
+db.connect((err) => {
   if (err) {
     console.log(`Error connecting to db`);
   } else {
