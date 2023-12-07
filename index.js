@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const mapRoute = require("./routes/mapRoute");
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 require("dotenv").config();
@@ -15,18 +16,7 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 // Routes Map
-app.get("/uri", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    taskRoutes: {
-      GET: `${process.env.URL}/api/tasks`,
-      POST: `${process.env.URL}/api/tasks`,
-      PUT: `${process.env.URL}/api/tasks/:id`,
-      DELETE: `${process.env.URL}/api/tasks/:id`,
-    },
-    userRoutes: { GET: "test", POST: "test", PUT: "test", DELETE: "test" },
-  });
-});
+app.get("/uri", mapRoute);
 
 // Routes
 app.use("/api/users", userRoutes);
