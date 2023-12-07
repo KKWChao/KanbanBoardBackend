@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const router = express.Router();
 const db = require("../config/db");
 const uuid = require("uuid");
@@ -8,9 +9,12 @@ const {
   deleteUserQuery,
   getSingleUserQuery,
   postUserQuery,
+  putUserQuery,
 } = require("../queries/userQueries");
 
 router.use(express.json());
+
+const saltRounds = 10;
 
 /* GET USERS (FOR TESTING ONLY) (COMMENT OUT WHEN IN PRODUCTION)  */
 router.get("/", (req, res) => {
@@ -59,15 +63,34 @@ router.get("/:id", (req, res) => {
 });
 
 /* POST USERS */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { email, password } = req.body;
-  const q = "INSERT INTO users (`id`, `email`, `password`) VALUES (?)";
-  const values = [uuid.v4(), email, password];
+  try {
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const values = [uuid.v4(), email, hashedPassword];
 
-  db.query(postUserQuery, [values], (err, data) => {
-    if (err) return res.status(500).json("Error creating users: ", err);
-    return res.status(200).json("User created");
-  });
+    db.query(postUserQuery, values, (err, data) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Error creating user",
+          error: err,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: "User created successfully",
+        data: data,
+      });
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error creating user",
+      error: err,
+    });
+  }
 });
 
 /* PUT USERS */
@@ -77,9 +100,19 @@ router.put("/:id", (req, res) => {
   const { email, password } = req.body;
   const q = "UPDATE users SET `email` = ?, `password` = ? WHERE id = ?";
 
-  db.query(q, [email, password, userId], (err, data) => {
-    if (err) return res.status(500).json("Error updating users: ", err);
-    return res.status(200).json("User updated");
+  db.query(putUserQuery, [email, password, userId], (err, data) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Error updating user",
+        error: err,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: data,
+    });
   });
 });
 
@@ -88,8 +121,18 @@ router.delete("/:id", (req, res) => {
   const userId = req.params.id;
 
   db.query(deleteUserQuery, [userId], (err, data) => {
-    if (err) return res.status(500).json("Error deleting users: ", err);
-    return res.status(200).json("User has been deleted");
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Error deleting user",
+        error: err,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+      data: data,
+    });
   });
 });
 

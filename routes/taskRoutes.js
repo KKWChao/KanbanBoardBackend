@@ -8,25 +8,46 @@ const {
   deleteTasksQuery,
   putTasksQuery,
   patchUpdateQueryGenerator,
+  getUserTasksQuery,
 } = require("../queries/taskQueries");
 
 router.use(express.json());
 
 /* GET TASKS */
 router.get("/", (req, res) => {
-  db.query(getAllTasksQuery, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error fetching tasks",
-        error: err,
+  const taskId = req.query.userId;
+  // Fetching user specific tasks
+  if (taskId) {
+    db.query(getUserTasksQuery, [taskId], (err, data) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Error fetching user tasks",
+          error: err,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: "User tasks fetched successfully",
+        data: data,
       });
-    return res.status(200).json({
-      success: true,
-      message: "Tasks fetched successfully",
-      data: data,
     });
-  });
+  } else {
+    // fetch all tasks
+    db.query(getAllTasksQuery, (err, data) => {
+      if (err)
+        return res.status(500).json({
+          success: false,
+          message: "Error fetching tasks",
+          error: err,
+        });
+      return res.status(200).json({
+        success: true,
+        message: "Tasks fetched successfully",
+        data: data,
+      });
+    });
+  }
 });
 
 /* POST TASKS */
@@ -95,7 +116,8 @@ router.patch("/:id", (req, res) => {
 
 /* DELETE TASKS */
 router.delete("/:id", (req, res) => {
-  db.query(deleteTasksQuery, (err, data) => {
+  const taskId = req.params.id;
+  db.query(deleteTasksQuery, taskId, (err, data) => {
     if (err)
       return res.status(500).json({
         success: false,

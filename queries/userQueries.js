@@ -7,7 +7,7 @@ const postUserQuery = `
   VALUES (?, ?, ?);
 `;
 
-const putUserQuery = ``;
+const putUserQuery = `UPDATE users SET email = ?, password = ? WHERE id = ?`;
 
 const deleteUserQuery = `DELETE FROM users WHERE id = ?`;
 module.exports = {

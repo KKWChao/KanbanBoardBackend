@@ -13,7 +13,7 @@ db.connect((err) => {
         title VARCHAR(255) NOT NULL,
         sub VARCHAR(125),
         vote INT DEFAULT 0,
-        FOREIGN KEY (userId) REFERENCES users(id)
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
     );`;
 
     db.query(sqlTaskTableQuery, (err, result) => {

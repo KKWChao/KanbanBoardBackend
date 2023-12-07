@@ -1,5 +1,7 @@
 const getAllTasksQuery = `SELECT * FROM tasks`;
 
+const getUserTasksQuery = `SELECT * FROM tasks WHERE userId = ?`;
+
 const postTasksQuery = `
   INSERT INTO tasks
   (id, userId, status, priority, title, sub, vote)
@@ -53,6 +55,7 @@ const deleteTasksQuery = `DELETE FROM tasks WHERE id = ?`;
 
 module.exports = {
   getAllTasksQuery,
+  getUserTasksQuery,
   postTasksQuery,
   putTasksQuery,
   patchUpdateQueryGenerator,
