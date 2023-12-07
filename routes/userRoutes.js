@@ -11,6 +11,7 @@ const {
   postUserQuery,
   putUserQuery,
 } = require("../queries/userQueries");
+const { patchUpdateQueryGenerator } = require("../queries/taskQueries");
 
 router.use(express.json());
 
@@ -96,9 +97,7 @@ router.post("/", async (req, res) => {
 /* PUT USERS */
 router.put("/:id", (req, res) => {
   const userId = req.params.id;
-  // const values = [req.body.email, req.body.password];
   const { email, password } = req.body;
-  const q = "UPDATE users SET `email` = ?, `password` = ? WHERE id = ?";
 
   db.query(putUserQuery, [email, password, userId], (err, data) => {
     if (err) {
@@ -108,6 +107,27 @@ router.put("/:id", (req, res) => {
         error: err,
       });
     }
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: data,
+    });
+  });
+});
+
+/* PATCH USERS */
+router.patch("/:id", (req, res) => {
+  const userId = req.params.id;
+  const { q, values } = patchUpdateQueryGenerator(req.body);
+  values.push(userId);
+
+  db.query(q, values, (err, data) => {
+    if (err)
+      return res.status(500).json({
+        success: false,
+        message: "Error updating user",
+        error: err,
+      });
     return res.status(200).json({
       success: true,
       message: "User updated successfully",

@@ -9,6 +9,26 @@ const postUserQuery = `
 
 const putUserQuery = `UPDATE users SET email = ?, password = ? WHERE id = ?`;
 
+const patchUserQuery = (body) => {
+  const { email, password } = body;
+  const qClause = [];
+  const values = [];
+
+  if (email !== undefined) {
+    qClause.push("`email` = ?");
+    values.push(email);
+  }
+  if (password !== undefined) {
+    qClause.push("`password` = ?");
+    values.push(password);
+  }
+
+  return {
+    query: `UPDATE users SET ${qClause.join(", ")} WHERE id = ?`,
+    values: values,
+  };
+};
+
 const deleteUserQuery = `DELETE FROM users WHERE id = ?`;
 module.exports = {
   getAllUsersQuery,
