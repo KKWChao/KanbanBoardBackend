@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const db = require("../config/db");
 const uuid = require("uuid");
+const authJWT = require("../middleware/authJWT");
 
 const {
   getAllUsersQuery,
@@ -18,7 +19,7 @@ router.use(express.json());
 const saltRounds = 10;
 
 /* GET USERS (FOR TESTING ONLY) (COMMENT OUT WHEN IN PRODUCTION)  */
-router.get("/", (req, res) => {
+router.get("/", authJWT, (req, res) => {
   db.query(getAllUsersQuery, (err, data) => {
     if (err)
       return res.status(500).json({
@@ -62,6 +63,8 @@ router.get("/:id", (req, res) => {
     });
   });
 });
+
+/* GET HASH */
 
 /* POST USERS */
 router.post("/", async (req, res) => {
