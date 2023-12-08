@@ -9,7 +9,7 @@ const postUserQuery = `
 
 const putUserQuery = `UPDATE users SET email = ?, password = ? WHERE id = ?`;
 
-const patchUserQuery = (body) => {
+const patchUserQueryGenerator = (body) => {
   const { email, password } = body;
   const qClause = [];
   const values = [];
@@ -35,5 +35,6 @@ module.exports = {
   getSingleUserQuery,
   postUserQuery,
   putUserQuery,
+  patchUserQueryGenerator,
   deleteUserQuery,
 };
