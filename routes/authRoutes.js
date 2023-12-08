@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const db = require("../config/db");
 const { loginQuery } = require("../queries/authQueries");
@@ -21,31 +22,47 @@ router.post("/login", async (req, res) => {
       }
 
       if (data.length === 0) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
       }
 
       const storedHash = data[0]?.password;
 
       bcrypt.compare(password, storedHash, (err, result) => {
         if (err) {
-          res.status(500).json({ error: "Internal server error" });
+          res
+            .status(500)
+            .json({ success: false, error: "Internal server error" });
         } else if (result) {
           /* if successful return jwt token */
-          res.status(200).json({ message: "Login successful" });
+          const userId = data[0]?.id;
+          const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+            expiresIn: "1h",
+          });
+          res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token: token,
+          });
         } else {
-          res.status(401).json({ error: "Invalid username or password" });
+          res.status(401).json({
+            sucess: false,
+            error: "Invalid username or password",
+          });
         }
       });
     });
-
-    /* else return user not found */
   } catch (err) {
     console.log(err);
   }
 });
-router.post("/logout", (req, res) => {});
+
+router.post("/logout", (req, res) => {
+  // Logout logic if needed
+  res.status(200).json({ success: true, message: "Logout successful" });
+});
 router.post("/register", (req, res) => {});
 
 module.exports = router;
