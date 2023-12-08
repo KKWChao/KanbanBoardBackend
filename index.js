@@ -7,6 +7,8 @@ const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const authRoutes = require("./routes/authRoutes");
 
+const authenticateJWT = require("./middleware/authJWT");
+
 require("dotenv").config();
 
 // Create tables if not in database

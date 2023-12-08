@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const db = require("../config/db");
+const authenticateJWT = require("../middleware/authJWT");
 const { loginQuery } = require("../queries/authQueries");
 
 router.use(express.json());
@@ -63,6 +64,15 @@ router.post("/logout", (req, res) => {
   // Logout logic if needed
   res.status(200).json({ success: true, message: "Logout successful" });
 });
+
+// testing jwt delete after
+router.get("/protected-route", authenticateJWT, (req, res) => {
+  const userId = req.user.userId;
+  res
+    .status(200)
+    .json({ success: true, message: "Protected route accessed", userId });
+});
+
 router.post("/register", (req, res) => {});
 
 module.exports = router;
