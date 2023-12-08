@@ -10,9 +10,9 @@ const {
   deleteUserQuery,
   getSingleUserQuery,
   postUserQuery,
+  patchUserQueryGenerator,
   putUserQuery,
 } = require("../queries/userQueries");
-const { patchUpdateQueryGenerator } = require("../queries/taskQueries");
 
 router.use(express.json());
 
@@ -76,6 +76,12 @@ router.post("/", async (req, res) => {
 
     db.query(postUserQuery, values, (err, data) => {
       if (err) {
+        if (err.code === "ER_DUP_ENTRY") {
+          return res.status(400).json({
+            success: false,
+            message: "Error creating user. Email already exists.",
+          });
+        }
         return res.status(500).json({
           success: false,
           message: "Error creating user",
@@ -121,7 +127,7 @@ router.put("/:id", (req, res) => {
 /* PATCH USERS */
 router.patch("/:id", (req, res) => {
   const userId = req.params.id;
-  const { q, values } = patchUpdateQueryGenerator(req.body);
+  const { q, values } = patchUserQueryGenerator(req.body);
   values.push(userId);
 
   db.query(q, values, (err, data) => {

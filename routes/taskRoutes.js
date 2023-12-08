@@ -7,7 +7,7 @@ const {
   postTasksQuery,
   deleteTasksQuery,
   putTasksQuery,
-  patchUpdateQueryGenerator,
+  patchTaskQueryGenerator,
   getUserTasksQuery,
 } = require("../queries/taskQueries");
 
@@ -96,7 +96,7 @@ router.put("/:id", (req, res) => {
 /* PATCH TASK - smaller updates */
 router.patch("/:id", (req, res) => {
   const taskId = req.params.id;
-  const { q, values } = patchUpdateQueryGenerator(req.body);
+  const { q, values } = patchTaskQueryGenerator(req.body);
   values.push(taskId);
 
   db.query(q, values, (err, data) => {

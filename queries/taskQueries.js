@@ -14,7 +14,7 @@ const putTasksQuery = `
   WHERE id = ?
 `;
 
-const patchUpdateQueryGenerator = (body) => {
+const patchTaskQueryGenerator = (body) => {
   const { status, priority, title, sub, vote } = body;
 
   const qClause = [];
@@ -58,6 +58,6 @@ module.exports = {
   getUserTasksQuery,
   postTasksQuery,
   putTasksQuery,
-  patchUpdateQueryGenerator,
+  patchTaskQueryGenerator,
   deleteTasksQuery,
 };
