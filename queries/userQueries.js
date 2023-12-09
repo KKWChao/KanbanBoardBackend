@@ -9,8 +9,8 @@ const postUserQuery = `
 
 const putUserQuery = `UPDATE users SET email = ?, password = ? WHERE id = ?`;
 
-const patchUserQueryGenerator = (body) => {
-  const { email, password } = body;
+const patchUserQueryGenerator = async (body) => {
+  const { email, hashedPassword } = body;
   const qClause = [];
   const values = [];
 
@@ -18,14 +18,20 @@ const patchUserQueryGenerator = (body) => {
     qClause.push("`email` = ?");
     values.push(email);
   }
-  if (password !== undefined) {
+  if (hashedPassword !== undefined) {
     qClause.push("`password` = ?");
-    values.push(password);
+    values.push(hashedPassword);
+  }
+  if (qClause.length === 0) {
+    // No fields to update, return early
+    throw new Error("No fields to update");
   }
 
+  const q = `UPDATE users SET ${qClause.join(", ")} WHERE id = ?`;
+
   return {
-    query: `UPDATE users SET ${qClause.join(", ")} WHERE id = ?`,
-    values: values,
+    q,
+    values,
   };
 };
 

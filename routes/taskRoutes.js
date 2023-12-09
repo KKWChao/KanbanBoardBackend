@@ -14,122 +14,126 @@ const {
 router.use(express.json());
 
 /* GET TASKS */
-router.get("/", (req, res) => {
-  const taskId = req.query.userId;
-  // Fetching user specific tasks
-  if (taskId) {
-    db.query(getUserTasksQuery, [taskId], (err, data) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: "Error fetching user tasks",
-          error: err,
-        });
-      }
+router.get("/", async (req, res) => {
+  const userId = req.query.userId;
+  try {
+    if (userId) {
+      // fetching single task based on id
+      const [data] = await db.query(getUserTasksQuery, [userId]);
+
       return res.status(200).json({
         success: true,
         message: "User tasks fetched successfully",
         data: data,
       });
-    });
-  } else {
-    // fetch all tasks
-    db.query(getAllTasksQuery, (err, data) => {
-      if (err)
-        return res.status(500).json({
-          success: false,
-          message: "Error fetching tasks",
-          error: err,
-        });
+    } else {
+      // fetch all tasks
+      const [data] = await db.query(getAllTasksQuery);
+
       return res.status(200).json({
         success: true,
         message: "Tasks fetched successfully",
         data: data,
       });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching user tasks",
+      error: err,
     });
   }
+
+  // Fetching user specific tasks
 });
 
 /* POST TASKS */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { userId, status, priority, title, sub, vote } = req.body;
   const values = [uuid.v4(), userId, status, priority, title, sub, vote];
 
-  db.query(postTasksQuery, values, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error creating tasks",
-        error: err,
-      });
+  try {
+    const [data] = await db.query(postTasksQuery, values);
 
     return res.status(201).json({
       success: true,
       message: "Task created successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error creating tasks",
+      error: err,
+    });
+  }
 });
 
 /* PUT TASKS */
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const taskId = req.params.id;
   const { status, priority, title, sub, vote } = req.body;
   const values = [status, priority, title, sub, vote, taskId];
 
-  db.query(putTasksQuery, values, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error updating tasks",
-        error: err,
-      });
+  try {
+    const [data] = await db.query(putTasksQuery, values);
 
     return res.status(200).json({
       success: true,
       message: "Tasks updated successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating tasks",
+      error: err,
+    });
+  }
 });
 
 /* PATCH TASK - smaller updates */
-router.patch("/:id", (req, res) => {
+router.patch("/:id", async (req, res) => {
   const taskId = req.params.id;
-  const { q, values } = patchTaskQueryGenerator(req.body);
-  values.push(taskId);
 
-  db.query(q, values, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error updating tasks",
-        error: err,
-      });
+  try {
+    const { q, values } = await patchTaskQueryGenerator(req.body);
+    values.push(taskId);
+    const [data] = await db.query(q, values);
+
     return res.status(200).json({
       success: true,
       message: "Tasks updated successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating tasks",
+      error: err,
+    });
+  }
 });
 
 /* DELETE TASKS */
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   const taskId = req.params.id;
-  db.query(deleteTasksQuery, taskId, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error deleting tasks",
-        error: err,
-      });
+
+  try {
+    const [data] = await db.query(deleteTasksQuery, taskId);
+
     return res.status(200).json({
       success: true,
       message: "Tasks deleted successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting tasks",
+      error: err,
+    });
+  }
 });
 
 module.exports = router;

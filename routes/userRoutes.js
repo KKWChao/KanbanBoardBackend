@@ -19,52 +19,49 @@ router.use(express.json());
 const saltRounds = 10;
 
 /* GET USERS (FOR TESTING ONLY) (COMMENT OUT WHEN IN PRODUCTION)  */
-router.get("/", authJWT, (req, res) => {
-  db.query(getAllUsersQuery, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error fetching users",
-        error: err,
-      });
-
+router.get("/", async (req, res) => {
+  try {
+    const [data, fields] = await db.query(getAllUsersQuery);
     return res.status(200).json({
       success: true,
       message: "Users fetched successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching users",
+      error: err,
+    });
+  }
 });
 
 /* GET SINGLE USER */
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
   const userId = req.params.id;
 
-  db.query(getSingleUserQuery, [userId], (err, data) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Error fetching user",
-        error: err,
-      });
-    }
-
+  try {
+    const [data] = await db.query(getSingleUserQuery, [userId]);
     if (data.length === 0) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-
     return res.status(200).json({
       success: true,
       message: "User fetched successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching user",
+      error: err,
+    });
+  }
 });
-
-/* GET HASH */
 
 /* POST USERS */
 router.post("/", async (req, res) => {
@@ -74,27 +71,21 @@ router.post("/", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     const values = [uuid.v4(), email, hashedPassword];
 
-    db.query(postUserQuery, values, (err, data) => {
-      if (err) {
-        if (err.code === "ER_DUP_ENTRY") {
-          return res.status(400).json({
-            success: false,
-            message: "Error creating user. Email already exists.",
-          });
-        }
-        return res.status(500).json({
-          success: false,
-          message: "Error creating user",
-          error: err,
-        });
-      }
-      return res.status(200).json({
-        success: true,
-        message: "User created successfully",
-        data: data,
-      });
+    const [data] = await db.query(postUserQuery, values);
+
+    return res.status(200).json({
+      success: true,
+      message: "User created successfully",
+      data: data,
     });
   } catch (err) {
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({
+        success: false,
+        message: "Error creating user. Email already exists.",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Error creating user",
@@ -104,65 +95,81 @@ router.post("/", async (req, res) => {
 });
 
 /* PUT USERS */
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const userId = req.params.id;
   const { email, password } = req.body;
 
-  db.query(putUserQuery, [email, password, userId], (err, data) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Error updating user",
-        error: err,
-      });
-    }
+  try {
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const [data] = await db.query(putUserQuery, [
+      email,
+      hashedPassword,
+      userId,
+    ]);
+
     return res.status(200).json({
       success: true,
       message: "User updated successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating user",
+      error: err,
+    });
+  }
 });
 
 /* PATCH USERS */
-router.patch("/:id", (req, res) => {
+router.patch("/:id", async (req, res) => {
   const userId = req.params.id;
-  const { q, values } = patchUserQueryGenerator(req.body);
-  values.push(userId);
 
-  db.query(q, values, (err, data) => {
-    if (err)
-      return res.status(500).json({
-        success: false,
-        message: "Error updating user",
-        error: err,
-      });
+  try {
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+    const { q, values } = await patchUserQueryGenerator({
+      email: req.body.email,
+      hashedPassword,
+    });
+    values.push(userId);
+
+    const [data] = await db.query(q, values);
+
     return res.status(200).json({
       success: true,
       message: "User updated successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating user",
+      error: err,
+    });
+  }
 });
 
 /* DELETE USERS */
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   const userId = req.params.id;
-
-  db.query(deleteUserQuery, [userId], (err, data) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: "Error deleting user",
-        error: err,
-      });
-    }
+  try {
+    const [data] = await db.query(deleteUserQuery, [userId]);
     return res.status(200).json({
       success: true,
       message: "User deleted successfully",
       data: data,
     });
-  });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting user",
+      error: err,
+    });
+  }
 });
 
 module.exports = router;
