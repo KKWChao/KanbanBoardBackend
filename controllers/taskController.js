@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const uuid = require("uuid");
 const db = require("../config/db");
 const {
-  getAllTasksQuery,
   postTasksQuery,
   deleteTasksQuery,
   putTasksQuery,
@@ -10,28 +9,19 @@ const {
   getUserTasksQuery,
 } = require("../queries/taskQueries");
 
+/* USING TOKEN TO GET USER ID/EMAIL */
+
 const getTasks = async (req, res) => {
-  const userId = req.query.userId;
+  const userId = req.user.userId;
+
   try {
-    if (userId) {
-      // fetching single task based on id
-      const [data] = await db.query(getUserTasksQuery, [userId]);
+    const [data] = await db.query(getUserTasksQuery, [userId]);
 
-      return res.status(200).json({
-        success: true,
-        message: "User tasks fetched successfully",
-        data: data,
-      });
-    } else {
-      // fetch all tasks
-      const [data] = await db.query(getAllTasksQuery);
-
-      return res.status(200).json({
-        success: true,
-        message: "Tasks fetched successfully",
-        data: data,
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "User tasks fetched successfully",
+      data: data,
+    });
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -42,7 +32,8 @@ const getTasks = async (req, res) => {
 };
 
 const createTask = async (req, res) => {
-  const { userId, status, priority, title, sub, vote } = req.body;
+  const userId = req.user.userId;
+  const { status, priority, title, sub, vote } = req.body;
   const values = [uuid.v4(), userId, status, priority, title, sub, vote];
 
   try {
@@ -63,9 +54,10 @@ const createTask = async (req, res) => {
 };
 
 const updateTask = async (req, res) => {
+  const userId = req.user.userId;
   const taskId = req.params.id;
   const { status, priority, title, sub, vote } = req.body;
-  const values = [status, priority, title, sub, vote, taskId];
+  const values = [status, priority, title, sub, vote, taskId, userId];
 
   try {
     const [data] = await db.query(putTasksQuery, values);
@@ -85,11 +77,12 @@ const updateTask = async (req, res) => {
 };
 
 const updatePatchTask = async (req, res) => {
+  const userId = req.user.userId;
   const taskId = req.params.id;
 
   try {
     const { q, values } = await patchTaskQueryGenerator(req.body);
-    values.push(taskId);
+    values.push(taskId, userId);
     const [data] = await db.query(q, values);
 
     return res.status(200).json({
@@ -107,10 +100,11 @@ const updatePatchTask = async (req, res) => {
 };
 
 const deleteTask = async (req, res) => {
+  const userId = req.user.userId;
   const taskId = req.params.id;
 
   try {
-    const [data] = await db.query(deleteTasksQuery, taskId);
+    const [data] = await db.query(deleteTasksQuery, [taskId, userId]);
 
     return res.status(200).json({
       success: true,

@@ -11,7 +11,7 @@ const postTasksQuery = `
 const putTasksQuery = `
   UPDATE tasks
   SET status = ?, priority = ?, title = ?, sub = ?, vote = ?
-  WHERE id = ?
+  WHERE id = ? AND userId = ?
 `;
 
 const patchTaskQueryGenerator = async (body) => {
@@ -45,7 +45,10 @@ const patchTaskQueryGenerator = async (body) => {
     values.push(vote);
   }
 
-  const q = `UPDATE tasks SET ${qClause.join(", ")} WHERE id = ?`;
+  const q = `
+    UPDATE tasks 
+    SET ${qClause.join(", ")}
+    WHERE id = ? AND userId = ?`;
 
   return {
     q,
