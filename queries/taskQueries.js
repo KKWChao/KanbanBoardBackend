@@ -56,7 +56,7 @@ const patchTaskQueryGenerator = async (body) => {
   };
 };
 
-const deleteTasksQuery = `DELETE FROM tasks WHERE id = ?`;
+const deleteTasksQuery = `DELETE FROM tasks WHERE id = ? AND userId = ?`;
 
 module.exports = {
   getAllTasksQuery,

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 router.use(express.json());
 
+/* SETUP URI MAP FOR LEGIBILITY */
 router.get("/uri", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -18,6 +19,11 @@ router.get("/uri", (req, res) => {
       PUT: `${process.env.URL}/api/users/:id`,
       PATCH: `${process.env.URL}/api/users/:id`,
       DELETE: `${process.env.URL}/api/users/:id`,
+    },
+    authRoutes: {
+      POST: `${process.env.URL}/auth/login`,
+      POST: `${process.env.URL}/auth/logout`,
+      POST: `${process.env.URL}/auth/register`,
     },
   });
 });
