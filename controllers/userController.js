@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const uuid = require("uuid");
-const db = require("../config/db");
+const { db } = require("../config/db");
 const {
   getAllUsersQuery,
   deleteUserQuery,
@@ -56,6 +56,7 @@ const getOneUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);

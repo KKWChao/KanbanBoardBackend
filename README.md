@@ -22,7 +22,8 @@ A nodejs backend for the kanban board frontend. Build with nodejs and mysql.
 []: diagram routes
 []: set auth on protected routes
 []: Set up user role table
-[] - Set up test scripts and conventions
+[]: Set up test scripts and conventions
+[]: remove input rings
 
 #### TODO DETAILS
 

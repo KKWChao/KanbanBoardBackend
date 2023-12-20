@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const uuid = require("uuid");
-const db = require("../config/db");
+const { db } = require("../config/db");
 const {
   postTasksQuery,
   deleteTasksQuery,
