@@ -55,12 +55,12 @@ const getOneUser = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, first_name, last_name, password } = req.body;
 
   try {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const values = [uuid.v4(), email, hashedPassword];
+    const values = [uuid.v4(), email, first_name, last_name, hashedPassword];
 
     const [data] = await db.query(postUserQuery, values);
 

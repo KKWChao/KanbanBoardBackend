@@ -3,8 +3,8 @@ const getAllUsersQuery = `SELECT * FROM users`;
 const getSingleUserQuery = `SELECT * FROM users WHERE id = ?`;
 
 const postUserQuery = `
-  INSERT INTO users (id, email, password) 
-  VALUES (?, ?, ?);
+  INSERT INTO users (id, email, first_name, last_name, password) 
+  VALUES (?, ?, ?, ?, ?);
 `;
 
 const putUserQuery = `UPDATE users SET email = ?, password = ? WHERE id = ?`;
