@@ -26,8 +26,6 @@ const login = async (req, res) => {
           .status(500)
           .json({ success: false, error: "Internal server error" });
       } else if (result) {
-        // if successful return jwt token
-        // If successful, include additional user information in the JWT payload
         const user = {
           userId: data[0]?.id,
           email: data[0]?.email,
@@ -46,6 +44,7 @@ const login = async (req, res) => {
       } else {
         res.status(401).json({
           sucess: false,
+          message: "ERR_PW",
           error: "Invalid username or password",
         });
       }

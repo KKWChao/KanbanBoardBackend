@@ -20,10 +20,10 @@ A nodejs backend for the kanban board frontend. Build with nodejs and mysql.
 [x]: Update user and task routes with [async/await] and [try/catch] blocks
 [x]: Separate routes to controllers and routes
 []: diagram routes
-[]: set auth on protected routes
+[X]: set auth on protected routes
 []: Set up user role table
 []: Set up test scripts and conventions
-[]: remove input rings
+[X]: remove input rings
 
 #### TODO DETAILS
 

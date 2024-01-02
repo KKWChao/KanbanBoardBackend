@@ -71,7 +71,7 @@ const createUser = async (req, res) => {
     });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
-      return res.status(400).json({
+      return res.status(405).json({
         success: false,
         code: err.code,
         message: "Error creating user. Email already exists.",
