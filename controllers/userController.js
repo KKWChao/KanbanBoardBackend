@@ -70,19 +70,25 @@ const createUser = async (req, res) => {
       data: data,
     });
   } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(405).json({
-        success: false,
-        code: err.code,
-        message: "Error creating user. Email already exists.",
-      });
-    }
+    switch (err.code) {
+      case "ER_DUP_ENTRY":
+        return res.status(405).json({
+          success: false,
+          code: err.code,
+          message: "Error creating user. Email already exists.",
+        });
+        break;
 
-    return res.status(500).json({
-      success: false,
-      message: "Error creating user",
-      error: err,
-    });
+      case "":
+        break;
+
+      default:
+        return res.status(500).json({
+          success: false,
+          message: "Error creating user",
+          error: err,
+        });
+    }
   }
 };
 
