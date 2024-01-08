@@ -22,9 +22,10 @@ const login = async (req, res) => {
 
     bcrypt.compare(password, storedHash, (err, result) => {
       if (err) {
-        res
-          .status(500)
-          .json({ success: false, error: "Internal server error" });
+        res.status(500).json({
+          success: false,
+          error: "Internal server error",
+        });
       } else if (result) {
         const user = {
           userId: data[0]?.id,
