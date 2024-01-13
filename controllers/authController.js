@@ -4,9 +4,9 @@ const { db } = require("../config/db");
 const { loginQuery } = require("../queries/authQueries");
 
 const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
+  try {
     // searching for email in db
     const [data] = await db.query(loginQuery, [email]);
 
@@ -20,37 +20,73 @@ const login = async (req, res) => {
 
     const storedHash = data[0].password;
 
-    bcrypt.compare(password, storedHash, (err, result) => {
-      if (err) {
-        res.status(500).json({
-          success: false,
-          error: "Internal server error",
-        });
-      } else if (result) {
-        const user = {
-          userId: data[0]?.id,
-          email: data[0]?.email,
-        };
+    const match = await bcrypt.compare(password, storedHash);
+    console.log(email, data, match);
 
-        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-          expiresIn: "1h",
-        });
+    if (!match) {
+      return res.status(401).json({
+        sucess: false,
+        message: "ERR_PW",
+        error: "Invalid username or password",
+        temp: match,
+      });
+    } else if (match) {
+      const user = {
+        userId: data[0]?.id,
+        email: data[0]?.email,
+      };
 
-        res.status(200).json({
-          success: true,
-          message: "Login successful",
-          userId: user.userId,
-          token: token,
-        });
-      } else {
-        res.status(401).json({
-          sucess: false,
-          message: "ERR_PW",
-          error: "Invalid username or password",
-        });
-      }
-    });
+      const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        userId: user.userId,
+        token: token,
+        temp: match,
+      });
+    } else {
+      return res.status(500).json({
+        sucess: false,
+        message: "ERR",
+        error: "Invalid",
+        temp: match,
+      });
+    }
+
+    // bcrypt.compare(password, storedHash, (err, result) => {
+    //   if (err) {
+    //     return res.status(500).json({
+    //       success: false,
+    //       error: "Internal server error",
+    //     });
+    //   } else if (result) {
+    //     const user = {
+    //       userId: data[0]?.id,
+    //       email: data[0]?.email,
+    //     };
+
+    //     const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+    //       expiresIn: "1h",
+    //     });
+
+    //     return res.status(200).json({
+    //       success: true,
+    //       message: "Login successful",
+    //       userId: user.userId,
+    //       token: token,
+    //     });
+    //   } else {
+    //     return res.status(401).json({
+    //       sucess: false,
+    //       message: "ERR_PW",
+    //       error: "Invalid username or password",
+    //     });
+    //   }
+    // });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({
       success: false,
       message: "Error fetching user",
