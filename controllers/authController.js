@@ -14,6 +14,7 @@ const login = async (req, res) => {
     if (data.length === 0) {
       return res.status(404).json({
         success: false,
+        error: "ERR_NO_USER_FOUND",
         message: "User not found",
       });
     }
@@ -28,7 +29,6 @@ const login = async (req, res) => {
         sucess: false,
         message: "ERR_PW",
         error: "Invalid username or password",
-        temp: match,
       });
     } else if (match) {
       const user = {
@@ -39,52 +39,20 @@ const login = async (req, res) => {
       const token = jwt.sign({ user }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
+
       return res.status(200).json({
         success: true,
         message: "Login successful",
         userId: user.userId,
         token: token,
-        temp: match,
       });
     } else {
       return res.status(500).json({
         sucess: false,
         message: "ERR",
         error: "Invalid",
-        temp: match,
       });
     }
-
-    // bcrypt.compare(password, storedHash, (err, result) => {
-    //   if (err) {
-    //     return res.status(500).json({
-    //       success: false,
-    //       error: "Internal server error",
-    //     });
-    //   } else if (result) {
-    //     const user = {
-    //       userId: data[0]?.id,
-    //       email: data[0]?.email,
-    //     };
-
-    //     const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-    //       expiresIn: "1h",
-    //     });
-
-    //     return res.status(200).json({
-    //       success: true,
-    //       message: "Login successful",
-    //       userId: user.userId,
-    //       token: token,
-    //     });
-    //   } else {
-    //     return res.status(401).json({
-    //       sucess: false,
-    //       message: "ERR_PW",
-    //       error: "Invalid username or password",
-    //     });
-    //   }
-    // });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
