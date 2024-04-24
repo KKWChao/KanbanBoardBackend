@@ -26,7 +26,7 @@ const login = async (req, res) => {
 
     if (!match) {
       return res.status(401).json({
-        sucess: false,
+        success: false,
         message: "ERR_PW",
         error: "Invalid username or password",
       });
